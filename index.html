@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="doc-title">Photo Studio</title>
+
+  <!-- Google Fonts & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #6366f1;
+      --accent: #ec4899;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    html {
+      background-color: var(--bg);
+      height: 100%;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overscroll-behavior-y: none;
+    }
+
+    /* Floating Header - Page Theme Matched Color */
+    header {
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      width: 90%;
+      max-width: 600px;
+      margin: 10px auto;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a855f7, #ec4899, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+
+    .header-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .header-profile-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      padding: 2px;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+      transition: transform 0.2s ease;
+    }
+
+    .header-profile-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .avatar-inner {
+      width: 100%;
+      height: 100%;
+      background: #1e293b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .avatar-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Search Bar Modal / Overlay */
+    .search-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      z-index: 250;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .search-container {
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+      margin-top: 40px;
+    }
+
+    .search-box-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 16px 48px 16px 20px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid rgba(236, 72, 153, 0.5);
+      border-radius: 16px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      box-shadow: 0 0 25px rgba(236, 72, 153, 0.2);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-close-btn {
+      position: absolute;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .suggestions-list {
+      margin-top: 8px;
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      display: none;
+    }
+
+    .suggestion-item {
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: rgba(236, 72, 153, 0.15);
+    }
+
+    .sugg-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .sugg-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .drawer-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 15px;
+      bottom: 15px;
+      right: -55vw;
+      width: 50vw;
+      max-width: 280px;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+      z-index: 201;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+    }
+
+    .drawer.active {
+      right: 12px;
+    }
+
+    .drawer-profile {
+      text-align: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 16px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a855f7, #ec4899, #6366f1);
+      padding: 2px;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    }
+
+    .drawer-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #0f172a;
+    }
+
+    .drawer-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .social-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      text-decoration: none;
+      color: #f1f5f9;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .social-btn:hover {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(236, 72, 153, 0.3));
+      border-color: rgba(236, 72, 153, 0.5);
+      transform: translateX(-3px);
+    }
+
+    .drawer-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .drawer-footer span {
+      display: block;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-top: 2px;
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1100px;
+      margin: 10px auto 0 auto;
+      padding: 0 16px 120px 16px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (min-width: 640px) {
+      .container { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (min-width: 1024px) {
+      .container { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Post Card */
+    .post-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .post-card:hover {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+      border-color: rgba(236, 72, 153, 0.5);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.25);
+    }
+
+    .post-link-wrapper {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .post-img-wrapper {
+      width: 100%;
+      height: auto;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .post-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .post-card:hover .post-img {
+      transform: scale(1.03);
+    }
+
+    .post-body {
+      padding: 16px 20px;
+    }
+
+    .post-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .post-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .post-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .action-btn.liked {
+      background: rgba(236, 72, 153, 0.25);
+      border-color: rgba(236, 72, 153, 0.6);
+      color: #ec4899;
+    }
+
+    /* Skeleton Loading Animations */
+    .skeleton-card { pointer-events: none; }
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton-title { height: 20px; width: 70%; margin-bottom: 12px; }
+    .skeleton-text { height: 14px; width: 90%; margin-bottom: 8px; }
+    .skeleton-text.short { width: 50%; }
+
+    /* Footer with Original Styling Preserved */
+    footer {
+      position: relative;
+      width: 100%;
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: auto;
+    }
+
+    .footer-social-icons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .social-circle-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #a855f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .social-circle-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+      background: #fdf4ff;
+    }
+
+    #footer-title, #footer-year {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 28px;
+      border-radius: 24px;
+      text-align: center;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      animation: popUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    #qrcode {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .close-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .close-btn:hover { opacity: 0.9; }
+
+    .alert-icon-wrapper {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ec4899;
+      font-size: 1.6rem;
+    }
+
+    .alert-message {
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 22px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Header -->
+  <header>
+    <div class="brand-name" id="header-title">Loading...</div>
+    
+    <div class="header-actions">
+      <button class="header-icon-btn" id="open-search" title="Search Posts">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+
+      <button class="header-profile-btn" id="open-drawer">
+        <div class="avatar-inner">
+          <img src="" id="header-avatar" style="display:none;">
+          <i class="fa-solid fa-user" id="header-avatar-icon"></i>
+        </div>
+      </button>
+    </div>
+  </header>
+
+  <!-- Search Modal Overlay -->
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-container">
+      <div class="search-box-wrapper">
+        <input type="text" class="search-input" id="search-input" placeholder="Title ya description search karein..." autocomplete="off">
+        <button class="search-close-btn" id="close-search"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="suggestions-list" id="suggestions-list"></div>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-profile">
+      <div class="avatar-wrapper">
+        <img src="https://via.placeholder.com/150" class="drawer-avatar" id="drawer-avatar-img">
+      </div>
+      <div class="drawer-title" id="drawer-title">Photo Studio</div>
+    </div>
+    
+    <div class="social-list" id="social-container"></div>
+
+    <div class="drawer-footer">
+      Powered by
+      <span id="drawer-powered-by">Photo Studio</span>
+    </div>
+  </aside>
+
+  <!-- Container -->
+  <main class="container" id="posts-container">
+    <article class="post-card skeleton-card">
+      <div class="post-img-wrapper skeleton" style="height:200px;"></div>
+      <div class="post-body">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text short"></div>
+      </div>
+    </article>
+    <article class="post-card skeleton-card">
+      <div class="post-img-wrapper skeleton" style="height:200px;"></div>
+      <div class="post-body">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text short"></div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-social-icons">
+      <a href="#" class="social-circle-btn" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+      <a href="#" class="social-circle-btn" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#" class="social-circle-btn" title="Twitter"><i class="fa-brands fa-twitter"></i></a>
+      <a href="#" class="social-circle-btn" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+    </div>
+    <div>
+      &copy; <span id="footer-year">2026</span> <span id="footer-title">Photo Studio</span>. All Rights Reserved.
+    </div>
+  </footer>
+
+  <!-- QR Code Modal -->
+  <div class="modal" id="qr-modal">
+    <div class="modal-card">
+      <h3 style="color:#fff;">Scan Post QR Code</h3>
+      <div id="qrcode"></div>
+      <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- Custom Alert Dialog Modal -->
+  <div class="modal" id="custom-alert-modal">
+    <div class="modal-card">
+      <div class="alert-icon-wrapper">
+        <i class="fa-solid fa-heart-circle-check"></i>
+      </div>
+      <div class="alert-message" id="custom-alert-text">Message here</div>
+      <button class="close-btn" onclick="closeAlertModal()">OK</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnK0jdxbDEaIyDJlK-tTh5LX0oXZFsxhg",
+      authDomain: "photo-studio-542cd.firebaseapp.com",
+      databaseURL: "https://photo-studio-542cd-default-rtdb.firebaseio.com",
+      projectId: "photo-studio-542cd",
+      storageBucket: "photo-studio-542cd.firebasestorage.app",
+      messagingSenderId: "202096337193",
+      appId: "1:202096337193:web:8db9cabef6b0037e065738",
+      measurementId: "G-7PK90SBR0R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let allPostsData = {};
+
+    const openDrawerBtn = document.getElementById('open-drawer');
+    const drawer = document.getElementById('drawer');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+
+    openDrawerBtn.addEventListener('click', () => {
+      drawer.classList.add('active');
+      drawerOverlay.classList.add('active');
+    });
+
+    drawerOverlay.addEventListener('click', () => {
+      drawer.classList.remove('active');
+      drawerOverlay.classList.remove('active');
+    });
+
+    document.getElementById('footer-year').innerText = new Date().getFullYear();
+
+    // Search Box Functionality
+    const openSearchBtn = document.getElementById('open-search');
+    const closeSearchBtn = document.getElementById('close-search');
+    const searchOverlay = document.getElementById('search-overlay');
+    const searchInput = document.getElementById('search-input');
+    const suggestionsList = document.getElementById('suggestions-list');
+
+    openSearchBtn.addEventListener('click', () => {
+      searchOverlay.style.display = 'flex';
+      searchInput.focus();
+    });
+
+    closeSearchBtn.addEventListener('click', closeSearchModal);
+
+    function closeSearchModal() {
+      searchOverlay.style.display = 'none';
+      searchInput.value = '';
+      suggestionsList.style.display = 'none';
+      renderPosts(allPostsData);
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      suggestionsList.innerHTML = '';
+
+      if (!query) {
+        suggestionsList.style.display = 'none';
+        renderPosts(allPostsData);
+        return;
+      }
+
+      const filteredKeys = Object.keys(allPostsData).filter(key => {
+        const post = allPostsData[key];
+        const titleMatch = post.title && post.title.toLowerCase().includes(query);
+        const descMatch = post.desc && post.desc.toLowerCase().includes(query);
+        return titleMatch || descMatch;
+      });
+
+      if (filteredKeys.length > 0) {
+        suggestionsList.style.display = 'block';
+        filteredKeys.forEach(key => {
+          const post = allPostsData[key];
+          const item = document.createElement('div');
+          item.className = 'suggestion-item';
+          item.innerHTML = `
+            <div class="sugg-title">${post.title || 'Untitled'}</div>
+            <div class="sugg-desc">${post.desc || ''}</div>
+          `;
+          item.onclick = () => {
+            closeSearchModal();
+            const targetCard = document.getElementById(`post-${key}`);
+            if (targetCard) {
+              targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          };
+          suggestionsList.appendChild(item);
+        });
+      } else {
+        suggestionsList.style.display = 'block';
+        suggestionsList.innerHTML = '<div class="suggestion-item"><div class="sugg-title" style="color:var(--text-muted)">Koi matching post nahi mila...</div></div>';
+      }
+
+      const filteredObject = {};
+      filteredKeys.forEach(k => filteredObject[k] = allPostsData[k]);
+      renderPosts(filteredObject);
+    });
+
+    window.showAlert = (msg) => {
+      document.getElementById('custom-alert-text').innerText = msg;
+      document.getElementById('custom-alert-modal').style.display = 'flex';
+    };
+
+    window.closeAlertModal = () => {
+      document.getElementById('custom-alert-modal').style.display = 'none';
+    };
+
+    // Sync Settings
+    onValue(ref(db, 'settings'), (snapshot) => {
+      const data = snapshot.val();
+      if(data) {
+        if(data.title) {
+          document.getElementById('header-title').innerText = data.title;
+          document.getElementById('drawer-title').innerText = data.title;
+          document.getElementById('doc-title').innerText = data.title;
+          document.getElementById('footer-title').innerText = data.title;
+          document.getElementById('drawer-powered-by').innerText = data.title;
+        }
+        if(data.profileUrl) {
+          document.getElementById('drawer-avatar-img').src = data.profileUrl;
+          const headerAvatar = document.getElementById('header-avatar');
+          headerAvatar.src = data.profileUrl;
+          headerAvatar.style.display = 'block';
+          document.getElementById('header-avatar-icon').style.display = 'none';
+        }
+      }
+    });
+
+    // Sync Social Links
+    onValue(ref(db, 'social_links'), (snapshot) => {
+      const container = document.getElementById('social-container');
+      container.innerHTML = '';
+      const data = snapshot.val();
+      if(data) {
+        Object.keys(data).forEach(key => {
+          const item = data[key];
+          container.innerHTML += `
+            <a href="${item.url}" target="_blank" class="social-btn">
+              <i class="${item.icon}"></i> <span>${item.name}</span>
+            </a>
+          `;
+        });
+      }
+    });
+
+    // Sync Posts Realtime
+    onValue(ref(db, 'posts'), (snapshot) => {
+      const data = snapshot.val() || {};
+      allPostsData = data;
+      renderPosts(allPostsData);
+
+      if (window.location.hash) {
+        setTimeout(() => {
+          const targetCard = document.querySelector(window.location.hash);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 500);
+      }
+    });
+
+    function renderPosts(data) {
+      const postsContainer = document.getElementById('posts-container');
+      
+      if(data && Object.keys(data).length > 0) {
+        postsContainer.innerHTML = '';
+        Object.keys(data).reverse().forEach(key => {
+          const post = data[key];
+          const postLink = post.link || '#';
+          const isLiked = localStorage.getItem(`liked_${key}`) === 'true';
+
+          postsContainer.innerHTML += `
+            <article class="post-card" id="post-${key}">
+              <a href="${postLink}" target="_blank" class="post-link-wrapper" onclick="trackView('${key}', ${post.views || 0})">
+                <div class="post-img-wrapper">
+                  <img src="${post.imgUrl}" class="post-img" loading="lazy">
+                </div>
+                <div class="post-body">
+                  ${post.title ? `<h2 class="post-title">${post.title}</h2>` : ''}
+                  ${post.desc ? `<p class="post-desc">${post.desc}</p>` : ''}
+                </div>
+              </a>
+              
+              <div class="post-body" style="padding-top: 0;">
+                <div class="post-actions">
+                  <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="likePost('${key}', ${post.likes || 0})">
+                    <i class="fa-solid fa-heart" style="color:${isLiked ? '#ec4899' : '#94a3b8'};"></i> 
+                    <span>${post.likes || 0}</span> Likes
+                  </button>
+                  <div style="display:flex; gap:10px;">
+                    <span class="action-btn" style="cursor:default;">
+                      <i class="fa-solid fa-eye"></i> ${post.views || 0}
+                    </span>
+                    <button class="action-btn" onclick="generateQR('${key}', ${post.views || 0})">
+                      <i class="fa-solid fa-qrcode"></i> QR
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+        });
+      } else {
+        postsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1; margin-top:20px;">Koi matching posts nahi mile.</p>';
+      }
+    }
+
+    // View Tracking
+    window.trackView = (key, currentViews) => {
+      const viewedPosts = JSON.parse(localStorage.getItem('viewed_posts') || '[]');
+      if (!viewedPosts.includes(key)) {
+        viewedPosts.push(key);
+        localStorage.setItem('viewed_posts', JSON.stringify(viewedPosts));
+        update(ref(db, `posts/${key}`), { views: currentViews + 1 });
+      }
+    };
+
+    // Like Tracking
+    window.likePost = (key, currentLikes) => {
+      if (localStorage.getItem(`liked_${key}`) === 'true') {
+        showAlert("Aap is post ko pehle hi like kar chuke hain!");
+        return;
+      }
+      localStorage.setItem(`liked_${key}`, 'true');
+      update(ref(db, `posts/${key}`), { likes: currentLikes + 1 });
+    };
+
+    // QR Code
+    window.generateQR = (key, currentViews) => {
+      trackView(key, currentViews);
+      
+      const postDirectURL = `${window.location.origin}${window.location.pathname}#post-${key}`;
+      
+      const qrcodeContainer = document.getElementById('qrcode');
+      qrcodeContainer.innerHTML = '';
+      new QRCode(qrcodeContainer, { text: postDirectURL, width: 180, height: 180 });
+      document.getElementById('qr-modal').style.display = 'flex';
+    };
+
+    window.closeModal = () => {
+      document.getElementById('qr-modal').style.display = 'none';
+    };
+  </script>
+</body>
+</html>
